@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Final Birthday Surprise</title>
+    <style>
+        /* General Styling - Birthday Theme */
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: #ffe0e6;
+            color: #4a4a4a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            margin: 0;
+            overflow: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        .vault-container {
+            background-color: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 450px;
+            border: 5px solid #ff69b4;
+            position: relative;
+            z-index: 10;
+            overflow: hidden;
+            /* Keeps particle bursts inside the card */
+        }
+
+        h1 {
+            color: #e91e63;
+            font-size: 3em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px #ffd700;
+        }
+
+        /* Input Styles */
+        #code-input {
+            padding: 15px;
+            margin: 20px 0;
+            width: 70%;
+            border: 3px solid #ffb6c1;
+            border-radius: 8px;
+            font-size: 1.5em;
+            text-align: center;
+            background-color: #fffaf0;
+            color: #e91e63;
+        }
+
+        /* --- GIFT BOX BUTTON STYLING --- */
+        #submit-btn {
+            color: #fff;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.3em;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+
+            /* Gift box body color (Polka-dot pattern) */
+            background: repeating-radial-gradient(circle at 0 0,
+                    #ff4081,
+                    #ff4081 10px,
+                    #e91e63 10px,
+                    #e91e63 20px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Gift Ribbon (Vertical) */
+        #submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 100%;
+            background-color: #ffd700;
+            /* Gold ribbon */
+            z-index: 2;
+        }
+
+        /* Gift Ribbon (Horizontal) */
+        #submit-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 100%;
+            height: 20px;
+            background-color: #ffd700;
+            z-index: 2;
+        }
+
+        /* Hover Effect */
+        #submit-btn:hover:not(:disabled) {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        #submit-btn:hover::before,
+        #submit-btn:hover::after {
+            background-color: #ffc400;
+        }
+
+        /* Ensure text is above the ribbon */
+        #submit-btn span {
+            position: relative;
+            z-index: 3;
+        }
+
+        #message,
+        #countdown {
+            margin-top: 20px;
+            font-size: 1.6em;
+            font-weight: 700;
+            z-index: 15;
+            position: relative;
+        }
+
+        #countdown {
+            color: #ff69b4;
+            display: none;
+        }
+
+        /* --- CARD-CONTAINED 10-SECOND BURST EFFECT --- */
+        #burst-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+
+        #burst-overlay.active {
+            opacity: 1;
+        }
+
+        /* Animation keyframes for the radial burst */
+        @keyframes burst-out {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--x), var(--y)) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 15px;
+            height: 5px;
+            border-radius: 2px;
+            top: 50%;
+            /* Center of the card */
+            left: 50%;
+            /* Center of the card */
+            transform: translate(-50%, -50%);
+            animation-duration: 2s;
+            animation-fill-mode: forwards;
+            animation-timing-function: cubic-bezier(0.1, -0.6, 0.2, 0);
+            opacity: 0;
+        }
+
+        .show-burst {
+            animation-name: burst-out;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="vault-container">
+        <h1>🎉 The Ultimate Birthday Code!</h1>
+        <p>This final code is the secret key to my heart (DDMMYYYY).</p>
+
+        <input type="number" id="code-input" placeholder="Enter 8-digit code" maxlength="8">
+        <button id="submit-btn"><span id="btn-text"> <a href="pagetwo.html"></a>Unlock Surprise</span></button>
+
+        <p id="message"></p>
+        <p id="countdown"></p>
+
+        <div id="burst-overlay"></div>
+    </div>
+
+    <script>
+        // *** CUSTOMIZATION: Set the correct 8-digit password here (DDMMYYYY) ***
+        const CORRECT_CODE = '12122005';
+        let countdownValue = 10;
+        let countdownInterval;
+        const colors = ['#e91e63', '#ffd700', '#ff69b4', '#00bcd4', '#ffffff'];
+
+        document.getElementById('submit-btn').addEventListener('click', function() {
+            const inputElement = document.getElementById('code-input');
+            const submittedCode = inputElement.value.trim();
+            const messageElement = document.getElementById('message');
+
+            if (submittedCode === CORRECT_CODE) {
+
+                // 1. **INITIATE THE SUSTAINED 10-SECOND BURST EFFECT**
+                initiateSustainedBurst();
+
+                // 2. Setup Countdown UI
+                messageElement.textContent = 'ACCESS GRANTED! Preparing BLAST OFF...';
+                messageElement.style.color = '#388e3c';
+                this.disabled = true;
+                inputElement.disabled = true;
+                document.getElementById('btn-text').textContent = "BLASTING OFF!"; // Change button text
+                document.getElementById('submit-btn').style.cursor = 'default';
+
+                document.getElementById('countdown').style.display = 'block';
+                document.getElementById('countdown').textContent = `10 SECONDS until the BIG REVEAL!`;
+
+                // 3. Start the timer logic
+                countdownInterval = setInterval(() => {
+                    countdownValue--;
+                    if (countdownValue > 0) {
+                        document.getElementById('countdown').textContent = `${countdownValue} SECONDS until the BIG REVEAL!`;
+                    } else {
+                        clearInterval(countdownInterval);
+                        // 4. Trigger final page navigation
+                        triggerFinalNavigation();
+                    }
+                }, 1000);
+
+            } else {
+                messageElement.textContent = 'Incorrect Code. Try again, sweetie!';
+                messageElement.style.color = '#d32f2f';
+            }
+        });
+
+        function initiateSustainedBurst() {
+            const burstOverlay = document.getElementById('burst-overlay');
+            burstOverlay.classList.add('active');
+            document.body.style.backgroundColor = '#ffc0cb';
+
+            const burstDuration = 10000;
+            const startTime = Date.now();
+
+            function createConfettiBurst() {
+                // Generates 50 particles that shoot outwards
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti-piece';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+                    const angle = Math.random() * 2 * Math.PI;
+                    // Keep particle distance limited to ensure it stays mostly on the card
+                    const distance = Math.random() * 200 + 50;
+                    const translateX = `${Math.cos(angle) * distance}px`;
+                    const translateY = `${Math.sin(angle) * distance}px`;
+
+                    confetti.style.setProperty('--x', translateX);
+                    confetti.style.setProperty('--y', translateY);
+
+                    confetti.style.animationDelay = `${Math.random() * 0.1}s`;
+                    confetti.classList.add('show-burst');
+
+                    burstOverlay.appendChild(confetti);
+
+                    // Remove element after animation (2.5 seconds)
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 2500);
+                }
+            }
+
+            // Trigger a new burst explosion every 500ms for 10 seconds
+            const burstInterval = setInterval(() => {
+                if (Date.now() - startTime < burstDuration) {
+                    createConfettiBurst();
+                } else {
+                    clearInterval(burstInterval);
+                }
+            }, 500);
+        }
+
+        function triggerFinalNavigation() {
+            // Navigate to the final gift page
+            // *** IMPORTANT: Ensure 'the_gift.html' is the file name of your next page! ***
+            window.location.href = 'the_gift.html';
+        }
+    </script>
+</body>
+
+</html>

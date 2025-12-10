@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ultimate Surprise!</title>
+    <style>
+        /* --- GLOBAL BASE STYLES --- */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e6e0f2;
+            color: #4a4a4a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+            transition: background-color 1.5s ease;
+            position: relative;
+        }
+
+        /* --- PUZZLE VIEW STYLES (Stage 1) --- */
+        #puzzle-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+
+        h1 {
+            color: #7b1fa2;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        #puzzle-container {
+            width: 400px;
+            height: 400px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 5px solid #7b1fa2;
+            border-radius: 5px;
+            background-color: #fff;
+            transition: opacity 0.5s;
+        }
+
+        .puzzle-piece {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+            box-sizing: border-box;
+            border: 1px solid #7b1fa2;
+            position: relative;
+
+            /* >>> 1. UPDATE IMAGE URL HERE <<< */
+            background-image: url('https://github.com/Sanjeeva-08/harsha/blob/main/8b64ff54-3241-4347-ba89-9463c0d0cad1.jpg?raw=true');
+            background-size: 400px 400px;
+        }
+
+        .piece-number {
+            /* Numbers are now invisible but kept for JS logic tracking */
+            opacity: 0 !important;
+        }
+
+        .piece-0 {
+            background-position: 0 0;
+        }
+
+        .piece-1 {
+            background-position: -200px 0;
+        }
+
+        .piece-2 {
+            background-position: 0 -200px;
+        }
+
+        .piece-3 {
+            background-position: -200px -200px;
+        }
+
+        .puzzle-piece.selected {
+            box-shadow: inset 0 0 10px 5px #ffeb3b;
+            border-color: #ffeb3b;
+            transform: scale(0.98);
+        }
+
+        /* --- SUCCESS MESSAGE STYLES --- */
+        #success-message {
+            position: absolute;
+            font-size: 2em;
+            color: #9c27b0;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+            z-index: 100;
+        }
+
+        /* --- GREETING CARD VIEW STYLES (Stage 2) --- */
+        #card-reveal-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fcf8f0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: default;
+            z-index: 50;
+
+            /* FULL SCREEN PATTERN */
+            background-image:
+                repeating-linear-gradient(45deg, transparent, transparent 20px, #ff4081 20px, #ff4081 40px),
+                repeating-linear-gradient(-45deg, transparent, transparent 20px, #ff4081 20px, #ff4081 40px);
+            background-blend-mode: overlay;
+        }
+
+        /* Balloon Burst Animation Styles */
+        .burst-balloon {
+            position: fixed;
+            font-size: 50px;
+            opacity: 0;
+            animation: burstOut 1.5s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes burstOut {
+            0% {
+                transform: scale(1) translate(0, 0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.1) translate(var(--x-end), var(--y-end));
+                opacity: 0;
+            }
+        }
+
+        /* Greeting Card */
+        #card-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 1s ease-in;
+            z-index: 20;
+            perspective: 1200px;
+        }
+
+        #card-wrapper.lifted {
+            opacity: 1;
+        }
+
+        .card-container {
+            width: 600px;
+            height: 400px;
+            position: relative;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            cursor: default;
+            transform-style: preserve-3d;
+        }
+
+        /* CARD COVER STYLES */
+        .card-cover {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+            transform-origin: left center;
+            transition: transform 1s ease-in-out;
+            z-index: 30;
+            cursor: pointer;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+
+            background: linear-gradient(145deg, #e91e63, #c2185b);
+            border: 4px dashed #ffd700;
+            overflow: hidden;
+        }
+
+        /* Decorations Container */
+        .card-cover-decor {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .decor-item {
+            position: absolute;
+            font-size: 30px;
+            opacity: 0.8;
+            animation: float 5s ease-in-out infinite alternate;
+        }
+
+        .decor-item:nth-child(even) {
+            animation-duration: 6s;
+            transform: rotate(5deg);
+        }
+
+        .decor-item:nth-child(odd) {
+            animation-duration: 4s;
+            transform: rotate(-5deg);
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Inner message styles */
+        .card-message {
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 40px;
+            box-sizing: border-box;
+            color: #333;
+            text-align: left;
+            position: absolute;
+            transform: rotateY(180deg);
+            transition: transform 1s ease-in-out;
+            backface-visibility: hidden;
+            z-index: 25;
+            overflow-y: auto;
+        }
+
+        .card-container.open .card-cover {
+            transform: rotateY(-180deg);
+        }
+
+        .card-container.open .card-message {
+            transform: rotateY(0deg);
+        }
+
+        .card-message h2 {
+            color: #c2185b;
+            font-size: 2em;
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card-message p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .card-cover span {
+            font-size: 0.4em;
+            margin-top: 10px;
+            font-weight: normal;
+        }
+
+        /* Restart Button Style */
+        .restart-button {
+            display: block;
+            margin-top: 25px;
+            padding: 10px 20px;
+            background-color: #ffd700;
+            color: #c2185b;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+
+        .restart-button:hover {
+            background-color: #ffc400;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="puzzle-section">
+        <h1>🧩 Piece the Memory Together!</h1>
+        <p>Click any two pieces to swap their positions and reveal the hidden photo.</p>
+
+        <div id="puzzle-container">
+            <div class="puzzle-piece" data-pos="0"></div>
+            <div class="puzzle-piece" data-pos="1"></div>
+            <div class="puzzle-piece" data-pos="2"></div>
+            <div class="puzzle-piece" data-pos="3"></div>
+        </div>
+
+        <div id="success-message">SOLVED! Preparing the Final Reveal...</div>
+    </div>
+
+    <div id="card-reveal-section">
+        <div id="card-wrapper">
+            <div id="greeting-card" class="card-container">
+                <div class="card-message">
+                    <h2>🎉 Happy Birthday</h2>
+                    <p style="font-style: italic; color: #666; margin-bottom: 30px;">
+                        You solved the final puzzle! This surprise is the destination of our adventure.
+                    </p>
+
+                    <h3>🎁 Your Ultimate Surprise:</h3>
+                    <p>
+                        Happiest birthday poorna🎉🥳 . may this day make more brighter✨ i wish all your dreams and goals come true and make your family proud and happy😇 .Thanks for being the best part of my life🫶🏻 .The time I spend with you is most happiest time i have never get . </p>
+                    <p>
+                        your absence at present is horrible . but it's ok your happiness is important for me .I Know u will be the successful women🎓 one day stay consistent and u will reach out your goals .once again happies birthday poorna ....missing u a lot 🥹
+                    </p>
+
+                    <p style="font-weight: bold; margin-top: 40px; font-size: 1.2em;">
+                        <br>
+                        Forever Yours ✨ ,<br>
+                        Harsha
+                    </p>
+
+                    <a href="index.html" class="restart-button">Start the Journey Over!</a>
+                </div>
+
+                <div id="card-cover" class="card-cover">
+                    <div class="card-cover-decor" id="decor-container"></div>
+                    The Final Gift
+                    <span>(Tap the cover to open)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PUZZLE LOGIC (Stage 1) ---
+        const pieceClasses = ['piece-0', 'piece-1', 'piece-2', 'piece-3'];
+        const puzzleSection = document.getElementById('puzzle-section');
+        const container = document.getElementById('puzzle-container');
+        const pieces = Array.from(document.querySelectorAll('.puzzle-piece'));
+        const successMessage = document.getElementById('success-message');
+
+        let selectedPiece = null;
+        let pieceOrder = [...pieceClasses];
+
+        function initializePuzzle() {
+            for (let i = pieceOrder.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pieceOrder[i], pieceOrder[j]] = [pieceOrder[j], pieceOrder[i]];
+            }
+            if (checkWin()) {
+                initializePuzzle();
+                return;
+            }
+            renderPuzzle(true);
+        }
+
+        function renderPuzzle(initial = false) {
+            pieces.forEach((piece, index) => {
+                const pieceClass = pieceOrder[index];
+                piece.className = 'puzzle-piece';
+                piece.classList.add(pieceClass);
+
+                // No numbers displayed, but the element is kept for internal logic
+                let numberOverlay = piece.querySelector('.piece-number');
+                if (!numberOverlay) {
+                    numberOverlay = document.createElement('div');
+                    numberOverlay.className = 'piece-number';
+                    piece.appendChild(numberOverlay);
+                }
+            });
+        }
+
+        function checkWin() {
+            return pieceOrder.every((pieceClass, index) => pieceClass === pieceClasses[index]);
+        }
+
+        container.addEventListener('click', (e) => {
+            const clickedPiece = e.target.closest('.puzzle-piece');
+            if (!clickedPiece || puzzleSection.style.opacity === '0') return;
+
+            if (selectedPiece === clickedPiece) {
+                clickedPiece.classList.remove('selected');
+                selectedPiece = null;
+            } else if (selectedPiece) {
+                const index1 = pieces.indexOf(selectedPiece);
+                const index2 = pieces.indexOf(clickedPiece);
+                [pieceOrder[index1], pieceOrder[index2]] = [pieceOrder[index2], pieceOrder[index1]];
+
+                renderPuzzle();
+                selectedPiece.classList.remove('selected');
+                selectedPiece = null;
+
+                if (checkWin()) {
+                    handleWin();
+                }
+            } else {
+                selectedPiece = clickedPiece;
+                clickedPiece.classList.add('selected');
+            }
+        });
+
+        // --- WIN HANDLER: TRANSITION TO CARD VIEW ---
+        function handleWin() {
+            container.style.boxShadow = '0 0 40px 10px #ffeb3b';
+
+            setTimeout(() => {
+                puzzleSection.style.opacity = '0';
+                successMessage.style.opacity = '1';
+                successMessage.style.display = 'block';
+
+                document.body.style.backgroundColor = '#fcf8f0';
+
+                setTimeout(() => {
+                    document.getElementById('card-reveal-section').style.display = 'flex';
+                    puzzleSection.style.display = 'none';
+                    startBalloonBurst();
+
+                    setTimeout(() => {
+                        document.getElementById('card-wrapper').classList.add('lifted');
+                        addCardDecorations();
+                    }, 1500);
+
+                }, 1000);
+            }, 500);
+        }
+
+        initializePuzzle();
+
+
+        // --- CARD LOGIC (Stage 2) ---
+        const cardRevealSection = document.getElementById('card-reveal-section');
+        const cardWrapper = document.getElementById('card-wrapper');
+        const greetingCard = document.getElementById('greeting-card');
+        const cardCover = document.getElementById('card-cover');
+        const decorContainer = document.getElementById('decor-container');
+
+        const balloonColors = ['🎈', '💖', '🎁', '✨'];
+        const decorEmojis = ['🎂', '🎁', '🎈', '🎉', '🥂', '🥳'];
+
+        let cardStage = 0;
+
+        function addCardDecorations() {
+            // Adds floating birthday emojis to the card cover
+            for (let i = 0; i < 12; i++) {
+                const item = document.createElement('div');
+                item.className = 'decor-item';
+                item.textContent = decorEmojis[Math.floor(Math.random() * decorEmojis.length)];
+
+                item.style.left = `${Math.random() * 90}%`;
+                item.style.top = `${Math.random() * 90}%`;
+                item.style.fontSize = `${Math.random() * 15 + 25}px`;
+                item.style.animationDelay = `-${Math.random() * 3}s`;
+
+                decorContainer.appendChild(item);
+            }
+        }
+
+        function startBalloonBurst() {
+            const numBalloons = 100;
+            const body = document.body;
+            cardStage = 1;
+
+            for (let i = 0; i < numBalloons; i++) {
+                const balloon = document.createElement('div');
+                balloon.className = 'burst-balloon';
+                balloon.textContent = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+
+                balloon.style.left = `${Math.random() * 60 + 20}vw`;
+                balloon.style.top = `${Math.random() * 60 + 20}vh`;
+
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = Math.random() * 400 + 100;
+                const xEnd = `${Math.cos(angle) * distance}px`;
+                const yEnd = `${Math.sin(angle) * distance}px`;
+
+                balloon.style.setProperty('--x-end', xEnd);
+                balloon.style.setProperty('--y-end', yEnd);
+                balloon.style.animationDelay = `${Math.random() * 0.5}s`;
+
+                body.appendChild(balloon);
+                setTimeout(() => balloon.remove(), 2000);
+            }
+        }
+
+        // --- STAGE 3: CARD FLIP ---
+        cardCover.addEventListener('click', handleCardFlip);
+
+        function handleCardFlip(event) {
+            event.stopPropagation();
+
+            if (cardStage === 1) {
+                greetingCard.classList.add('open');
+
+                cardCover.style.cursor = 'default';
+                cardCover.removeEventListener('click', handleCardFlip);
+
+                decorContainer.style.display = 'none';
+
+                setTimeout(() => {
+                    cardCover.querySelector('span').textContent = "Happy Birthday!";
+                }, 500);
+
+                cardStage = 2;
+            }
+        }
+    </script>
+</body>
+
+</html>

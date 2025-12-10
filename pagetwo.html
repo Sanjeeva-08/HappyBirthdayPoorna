@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Little Things I Love</title>
+    <style>
+        /* Base Styles (Consistent Theme - unchanged) */
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #fce4ec;
+            color: #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #c2185b;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            z-index: 20;
+            position: relative;
+        }
+
+        p {
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            z-index: 20;
+            position: relative;
+        }
+
+        /* --- ROSE ANIMATION (Background Effect - unchanged) --- */
+        .rose-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .rose {
+            position: absolute;
+            font-size: 30px;
+            color: #e91e63;
+            animation: fall-rotate 15s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes fall-rotate {
+            0% {
+                transform: translate(var(--x, 0), -10vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.8;
+            }
+
+            90% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translate(var(--x, 0), 110vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* --- IMAGE CAROUSEL STYLES (unchanged) --- */
+        .carousel-wrapper {
+            width: 400px;
+            height: 300px;
+            margin-bottom: 50px;
+            perspective: 1000px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .carousel-slides {
+            width: 400%;
+            height: 100%;
+            display: flex;
+            animation: carousel-slide 16s infinite;
+        }
+
+        .carousel-slides img {
+            width: 25%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        @keyframes carousel-slide {
+
+            0%,
+            20% {
+                transform: translateX(0);
+            }
+
+            25%,
+            45% {
+                transform: translateX(-25%);
+            }
+
+            50%,
+            70% {
+                transform: translateX(-50%);
+            }
+
+            75%,
+            95% {
+                transform: translateX(-75%);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* --- HOVER LOVE NOTES STYLES (unchanged) --- */
+        .note-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 90%;
+            max-width: 800px;
+            z-index: 20;
+            margin-bottom: 80px;
+            /* INCREASED SPACE BELOW NOTES */
+        }
+
+        .love-note {
+            background-color: #fff0f5;
+            padding: 25px 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(255, 64, 129, 0.3);
+            width: 150px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: #ff80ab;
+            line-height: 1.4;
+            font-style: italic;
+        }
+
+        .love-note:hover {
+            background-color: #ff4081;
+            color: white;
+            transform: scale(1.05) translateY(-5px);
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        /* --- GIFT BOX BUTTON STYLING (MODIFIED) --- */
+        .cta-button {
+            color: #fff;
+            padding: 10px 30px;
+            /* DECREASED PADDING HERE (smaller box) */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+            /* Slightly smaller font to fit */
+            font-weight: bold;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 20;
+            display: inline-block;
+            text-decoration: none;
+
+            /* Gift box body color (Polka-dot pattern) */
+            background: repeating-radial-gradient(circle at 0 0,
+                    #ff4081,
+                    #ff4081 10px,
+                    #e91e63 10px,
+                    #e91e63 20px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Gift Ribbon (Vertical) - Adjusted for new size */
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            /* Slightly thinner ribbon */
+            height: 100%;
+            background-color: #ffd700;
+            z-index: 2;
+        }
+
+        /* Gift Ribbon (Horizontal) - Adjusted for new size */
+        .cta-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 100%;
+            height: 15px;
+            /* Slightly thinner ribbon */
+            background-color: #ffd700;
+            z-index: 2;
+        }
+
+        /* Hover Effect (unchanged) */
+        .cta-button:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .cta-button:hover::before,
+        .cta-button:hover::after {
+            background-color: #ffc400;
+        }
+
+        /* Ensure text is above the ribbon */
+        .cta-button span {
+            position: relative;
+            z-index: 3;
+        }
+
+        /* Container for the next link - for spacing control */
+        .next-link {
+            margin-top: 50px;
+            /* Ensure space above the button */
+        }
+
+
+        /* Initial Confetti Blast Styles (unchanged) */
+        .confetti-piece {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #ffd700;
+            border-radius: 50%;
+            animation: shoot 1s forwards;
+            z-index: 100;
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--x), var(--y)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="rose-container"></div>
+
+    <div class="carousel-wrapper">
+        <div class="carousel-slides">
+            <img src="https://github.com/Sanjeeva-08/harsha/blob/main/904633ab-2aa9-4d2f-acc9-c0d73837aa54.jpg?raw=true" alt="Carousel Image 1">
+            <img src="https://github.com/Sanjeeva-08/harsha/blob/main/9e7608b3-d9bf-411d-a4a8-1704996d9899.jpg?raw=true" alt="Carousel Image 2">
+            <img src="https://github.com/Sanjeeva-08/harsha/blob/main/c0f87ed2-84ec-47cb-9e64-445e8c0e4926.jpg?raw=true" alt="Carousel Image 3">
+            <img src="https://github.com/Sanjeeva-08/harsha/blob/main/46419925-3704-46d9-b626-f0b1cab0b128.jpg?raw=true" alt="Carousel Image 4">
+        </div>
+    </div>
+
+    <h1>💖 </h1>
+    <p>Hover over each message bubble to reveal the hidden compliment!</p>
+
+    <div class="note-container">
+        <div class="love-note" onmouseover="this.textContent='Your incredible ability to make me smile, no matter what.'" onmouseout="this.textContent='Hover Me!'">
+            Hover Me!
+        </div>
+        <div class="love-note" onmouseover="this.textContent='Even in silence, your impact on my life is loud and clear. Wishing the most important person I know a beautiful, peaceful birthday.'" onmouseout="this.textContent='Hover Me!'">
+            Hover Me!
+        </div>
+        <div class="love-note" onmouseover="this.textContent='Some connections transcend circumstance. Today, I simply wish the person who means the world to me the happiest birthday Poorna.'" onmouseout="this.textContent='Hover Me!'">
+            Hover Me!
+        </div>
+        <div class="love-note" onmouseover="this.textContent='Today, I celebrate the day you came into the world. You have always been and will always be incredibly important to me. Happy Birthday Puri.'" onmouseout="this.textContent='Hover Me!'">
+            Hover Me!
+        </div>
+        <div class="love-note" onmouseover="this.textContent='Your absence leaves a space nothing can fill. Wishing the most important person the happiest of birthday.'" onmouseout="this.textContent='Hover Me!'">
+            Hover Me!
+        </div>
+        <div class="love-note" onmouseover="this.textContent='Happy Birthday. The greatest gift would be your presence, but your happiness is my sincerest wish.'" onmouseout="this.textContent='Hover Me!'">
+            Hover Me!
+        </div>
+    </div>
+
+    <div class="next-link">
+        <a href="finalpage.html" class="cta-button"><span>Next Surprise Awaits</span></a>
+    </div>
+
+    <script>
+        // JavaScript for the Initial Confetti Blast (on page load)
+        document.addEventListener('DOMContentLoaded', () => {
+            const colors = ['#e91e63', '#ffd700', '#ff69b4', '#00bcd4'];
+            for (let i = 0; i < 40; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+                const startX = window.innerWidth / 2;
+                const startY = window.innerHeight / 2;
+                confetti.style.left = `${startX}px`;
+                confetti.style.top = `${startY}px`;
+
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = 800;
+                const destX = `${Math.cos(angle) * distance}px`;
+                const destY = `${Math.sin(angle) * distance}px`;
+
+                confetti.style.setProperty('--x', destX);
+                confetti.style.setProperty('--y', destY);
+
+                document.body.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.remove();
+                }, 1000);
+            }
+
+            // Generate Roses
+            const roseContainer = document.querySelector('.rose-container');
+            for (let i = 0; i < 15; i++) {
+                const rose = document.createElement('div');
+                rose.className = 'rose';
+                rose.textContent = '🌹';
+
+                rose.style.left = `${Math.random() * 100}vw`;
+                rose.style.animationDuration = `${Math.random() * 10 + 8}s`;
+                rose.style.animationDelay = `-${Math.random() * 15}s`;
+                rose.style.setProperty('--x', `${Math.random() * 100 - 50}px`);
+
+                roseContainer.appendChild(rose);
+            }
+        });
+    </script>
+</body>
+
+</html>
